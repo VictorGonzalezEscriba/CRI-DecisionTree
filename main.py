@@ -6,29 +6,20 @@ pd.set_option('display.float_format', lambda x: '%.3f' % x)
 
 # Function to read data
 def load_dataset(path):
-    dataset = pd.read_csv(path, header=0, delimiter=',')
-    return dataset
+    # Add the columns headers, see adult.names
+    head = ['Age', 'WorkClass', 'fnlwgt', 'Education', 'EducationNum', 'MaritalStatus', 'Occupation', 'Relationship',
+            'Race', 'Sex', 'CapitalGain', 'CapitalLoss', 'HPW', 'NativeCountry', 'Income']
+    df = pd.read_csv(path, header=None, names=head, delimiter=', ', engine='python')
+    return df
+
+
+# En este dataset estan con "?", hay que buscar alguna manera TODO
+def clean_dataset(d):
+    return 0
 
 
 # Load the dataset
 dataset = load_dataset('data/adult.data')
-data = dataset.values
-print(data)
+# clean_dataset = clean_dataset(dataset)
 
-x = data[:, :2]
-y = data[:, 2]
 
-# To see the sizes of the dataset
-print("Dimensionalitat de la BBDD:", dataset.shape)
-print("Dimensionalitat de les entrades X:", x.shape)
-print("Dimensionalitat de l'atribut Y:", y.shape)
-
-# To see all the columns with no values
-# En este dataset estan con "?", hay que buscar alguna manera TODO
-"""
-x = dataset.isnull().sum()
-null_columns = dataset.columns[dataset.isnull().any()]
-print(null_columns)
-print(dataset[null_columns].isnull().sum())
-print("Total de valors no existents:", dataset.isnull().sum().sum())
-"""
