@@ -1,6 +1,8 @@
 import pandas as pd
-# To avoid pandas error in cut/qcut
+import numpy as np
+# To avoid pandas error/warning in cut/qcut
 pd.options.mode.chained_assignment = None
+
 
 
 # Function to read data
@@ -40,7 +42,7 @@ def clean_dataset(d):
     # fnlwgt because it is used to see if two samples have similar characteristics and we don't need
     # Education, because we can see how far they have come in the studies with EducationNum
     # Relationship, because we find more important the attribute marital-status
-    return df.drop(['fnlwgt', "Education", "Relationship"], axis="columns")
+    return df.drop(['fnlwgt', "Education", "Relationship"], axis="columns").to_numpy()
 
 
 # Load the dataset
