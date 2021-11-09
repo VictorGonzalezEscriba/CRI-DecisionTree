@@ -1,6 +1,3 @@
-import numpy as np
-
-
 class Node:
     def __init__(self, entropy=None, num_samples=None, true_false=None, father=None, id=None, edge=None, data=None):
         self.id = id
@@ -14,6 +11,7 @@ class Node:
         self.entropy = entropy
         self.data = data
         self.visited = False
+
         # To calculate the entropy, in 3{2+,1-}
         # 3 is num_samples
         # 2,1 are the two positions of true_false
@@ -53,6 +51,20 @@ class Node:
     def set_visited_true(self):
         self.visited = True
 
-    # Method
+    # Methods
     def add_son(self, son):
         self.sons.append(son)
+
+    # To see if the node is a leaf
+    def is_leaf(self):
+        # If there is a 0 in true_false it means that the node is a leaf
+        if 0 in self.true_false:
+            self.leaf = True
+            # Now we have to check if the node is at the positives or negatives values
+            # Positives
+            if self.true_false[0] == 0:
+                self.decision = '<=50K'
+            # Negatives
+            else:
+                self.decision = '>50K'
+        return self.leaf
