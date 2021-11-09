@@ -1,23 +1,22 @@
+
+
 class Node:
-    def __init__(self, entropy=None, num_samples=None, true_false=None, father=None, id=None, edge=None, data=None):
+    def __init__(self, entropy=None, num_samples=None, true_false=None, father=None, id=None, edge=None, attribute=None):
         self.id = id
         self.father = father
         self.sons = []
-
         # The question (?)
         self.edge = edge
-
         # Value of the node's entropy
         self.entropy = entropy
-        self.data = data
+        # The attribute we set to the node
+        self.attribute = attribute
         self.visited = False
-
         # To calculate the entropy, in 3{2+,1-}
         # 3 is num_samples
-        # 2,1 are the two positions of true_false
+        # 2+,1- are the two positions of true_false
         self.num_samples = num_samples
         self.true_false = true_false
-
         # Attributes for the final decision
         self.leaf = False
         self.decision = ''
@@ -44,9 +43,15 @@ class Node:
     def get_entropy(self):
         return self.entropy
 
+    def get_attribute(self):
+        return self.attribute
+
     # Setters
     def set_entropy(self, entropy):
         self.entropy = entropy
+
+    def set_attribute(self, attribute):
+        self.attribute = attribute
 
     def set_visited_true(self):
         self.visited = True
