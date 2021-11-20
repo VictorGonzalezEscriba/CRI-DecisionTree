@@ -28,15 +28,15 @@ class DecisionTree():
         for attribute_value in attribute_array[1]:
             total_length = attribute_value[1] + attribute_value[2]
             total_probability = total_length / self.total_length
-            true_probability = attribute_value[1]/total_length
-            false_probability = attribute_value[2]/total_length
-            if true_probability == 0:
+            if attribute_value[1] == 0:
                 true_part = 0
             else:
+                true_probability = attribute_value[1] / total_length
                 true_part = true_probability * math.log2(true_probability)
-            if false_probability == 0:
+            if attribute_value[2] == 0:
                 false_part = 0
             else:
+                false_probability = attribute_value[2] / total_length
                 false_part = false_probability * math.log2(false_probability)
             entropy += total_probability * (- true_part - false_part)
         return entropy
