@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+from DT import DecisionTree
 # To avoid pandas error/warning in cut/qcut
 pd.options.mode.chained_assignment = None
 
@@ -42,11 +43,16 @@ def clean_dataset(d):
     # fnlwgt because it is used to see if two samples have similar characteristics and we don't need
     # Education, because we can see how far they have come in the studies with EducationNum
     # Relationship, because we find more important the attribute marital-status
-    return df.drop(['fnlwgt', "Education", "Relationship"], axis="columns")  # .to_numpy()
+    return df.drop(['fnlwgt', "Education", "Relationship"], axis="columns")
 
 
 # Load the dataset
+"""
 dataset = load_dataset('data/adult.data')
 data = clean_dataset(dataset)
 print(data)
+"""
+
+print(DecisionTree().calculate_entropy_attribute(["Op.Major", [['Si', 0, 2], ['No', 2, 1]]]))
+
 

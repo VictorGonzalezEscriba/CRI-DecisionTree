@@ -1,4 +1,4 @@
-from anytree import Node
+
 
 class Node:
     def __init__(self, entropy=None, num_samples=None, true_false=None, father=None, id=None, edge=None, attribute=None):
