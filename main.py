@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from DT import DecisionTree
+from ID3 import ID3
 # To avoid pandas error/warning in cut/qcut
 pd.options.mode.chained_assignment = None
 
@@ -53,6 +53,6 @@ data = clean_dataset(dataset)
 print(data)
 """
 
-print(DecisionTree().calculate_entropy_attribute(["Op.Major", [['Si', 0, 2], ['No', 2, 1]]]))
+print(ID3().calculate_entropy_attribute(["Op.Major", [['Si', 0, 2], ['No', 2, 1]]]))
 
 

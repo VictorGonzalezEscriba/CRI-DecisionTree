@@ -5,7 +5,7 @@ import graphviz
 from Node import Node
 
 
-class DecisionTree():
+class ID3():
     def __init__(self):
         self.node_list = []
         self.system_entropy = 0.0
