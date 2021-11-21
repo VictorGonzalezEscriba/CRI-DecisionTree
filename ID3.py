@@ -4,7 +4,7 @@ import copy
 from Node import Node
 
 
-class ID3():
+class ID3:
     def __init__(self):
         self.node_list = []
         self.system_entropy = 0.0
@@ -52,27 +52,45 @@ class ID3():
 
     def calculate_true_false(self, data, attribute):
         unique, counts = np.unique(data[attribute].to_numpy(), return_counts=True)
-        # print(unique, "Counts: ", counts)
         true_false = []
+
         for attribute_value in unique:
-            true = 0
-            false = 0
-            for index, row in data.iterrows():
-                if row[attribute] == attribute_value and row['Income']
+            true_raw = data.loc[(data[attribute] == attribute_value) & (data['Income'] == '<=50K')]
+            false_raw = data.loc[(data[attribute] == attribute_value) & (data['Income'] == '>50K')]
+            true = true_raw.shape[0]
+            false = false_raw.shape[0]
+            true_false.append([attribute_value, true, false])
+        # print(true_false)
         return true_false
 
     def id3(self, data):
         true_false = [np.count_nonzero(data[:-1].to_numpy() == '<=50K'), np.count_nonzero(data[:-1].to_numpy() == '>50K')]
-        self.total_length = len(data.columns)
+        self.total_length = data.shape[0]
         self.calculate_system_entropy(true_false)
         # To calculate all the true_false of each attribute
         tf_array = []
         for attribute in data.columns:
-            # Example: [['Family', [['SI', 0, 2], ['NO', 2, 1]]], ['Gran', [['SI', 2, 1], ['NO', 3, 2]]]]
-            tf_array.append([attribute, self.calculate_true_false(data, attribute)])
+            if attribute != 'Income':
+                # Example: [['Family', [['SI', 0, 2], ['NO', 2, 1]]], ['Gran', [['SI', 2, 1], ['NO', 3, 2]]]]
+                tf_array.append([attribute, self.calculate_true_false(data, attribute)])
+
         entropy_array = []
         gain_array = []
+
+        # Calculate the Entropy
         for attribute in tf_array:
             entropy_array.append(self.calculate_entropy_attribute(attribute))
-            gain_array.append(self.calculate_gain_id3(self.calculate_entropy_attribute(attribute)))
-        # print(entropy_array)
+        # Calculate the Gain
+        for entropy in entropy_array:
+            gain_array.append(self.calculate_gain_id3(entropy))
+
+        # Creating the winner node
+        winner_index = gain_array.index(max(gain_array))
+        winner_attribute, winner_entropy = list(data.columns)[winner_index], entropy_array[winner_index]
+        winner_edges = []
+        for true_false in tf_array:
+            if true_false[0] == winner_attribute:
+                winner_edges = true_false[1]
+        winner_node = Node(entropy=winner_entropy, attribute=winner_attribute,  edges=winner_edges)
+        self.node_list.append(winner_node)
+        print(self.node_list[-1].print_node())
