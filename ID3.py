@@ -14,7 +14,17 @@ class ID3():
 
     def calculate_system_entropy(self, true_false):
         total_length = true_false[0] + true_false[1]
-        self.system_entropy = - (true_false[0]/total_length * math.log2(true_false[0]/total_length)) - (true_false[1]/total_length * math.log2(true_false[1]/total_length))
+        if true_false[0] == 0:
+            true_part = 0
+        else:
+            true_probability = true_false[0] / total_length
+            true_part = true_probability * math.log2(true_probability)
+        if true_false[1] == 1:
+            false_part = 0
+        else:
+            false_probability = true_false[1] / total_length
+            false_part = false_probability * math.log2(false_probability)
+        self.system_entropy = - true_part - false_part
 
     def calculate_gain_id3(self, att_entropy):
         if len(self.node_list) == 0:
@@ -46,25 +56,27 @@ class ID3():
         # total_length = true_false[0] + true_false[1]
         true_false = []
         for attribute_value in unique:
+            # Error here
             true = len(np.where(data[attribute].to_numpy() == attribute_value and data['Income'].to_numpy() == '<=50K'))
             false = len(np.where(data[attribute].to_numpy() == attribute_value and data['Income'].to_numpy() == '>50K'))
             true_false.append([attribute_value, true, false])
+        print(true_false)
         return true_false
 
     def id3(self, data):
-        true_false = [np.count_nonzero(data[:, -1] == '<=50K'), np.count_nonzero(data[:, -1] == '>50K')]
+        true_false = [np.count_nonzero(data[:-1].to_numpy() == '<=50K'), np.count_nonzero(data[:-1].to_numpy() == '>50K')]
+        print(true_false)
         self.total_length = len(data.columns)
         self.calculate_system_entropy(true_false)
         # To calculate all the true_false of each attribute
         tf_array = []
         for attribute in data.columns:
-            # Format: [Attribute, [Attribute_value, true, false]]
-            # Example: [Family, [[SI, 0, 2], [NO, 2, 1]]]
+            # Example: [[Family, [[SI, 0, 2], [NO, 2, 1]]], [Gran, [[SI, 2, 1], [NO, 3, 2]]]]
             tf_array.append([attribute, self.calculate_true_false(data, attribute)])
-
         entropy_array = []
         for attribute in tf_array:
-            entropy_array.append(self.calculate_entropy_attribute())
+            entropy_array.append(self.calculate_entropy_attribute(attribute))
+        print(entropy_array)
 
 
 
