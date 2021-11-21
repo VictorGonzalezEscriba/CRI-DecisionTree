@@ -7,8 +7,9 @@ from Node import Node
 class ID3:
     def __init__(self):
         self.node_list = []
+        self.visited_attributes = []
         self.system_entropy = 0.0
-        self.total_length = 5
+        self.total_length = 0
         # true_false = [<=50K,>50K]
 
     def calculate_system_entropy(self, true_false):
@@ -64,9 +65,11 @@ class ID3:
         return true_false
 
     def id3(self, data):
+        # System calculations
         true_false = [np.count_nonzero(data[:-1].to_numpy() == '<=50K'), np.count_nonzero(data[:-1].to_numpy() == '>50K')]
         self.total_length = data.shape[0]
         self.calculate_system_entropy(true_false)
+
         # To calculate all the true_false of each attribute
         tf_array = []
         for attribute in data.columns:
@@ -85,12 +88,17 @@ class ID3:
             gain_array.append(self.calculate_gain_id3(entropy))
 
         # Creating the winner node
-        winner_index = gain_array.index(max(gain_array))
-        winner_attribute, winner_entropy = list(data.columns)[winner_index], entropy_array[winner_index]
-        winner_edges = []
+        root_index = gain_array.index(max(gain_array))
+        root_attribute, winner_entropy = list(data.columns)[root_index], entropy_array[root_index]
+        self.visited_attributes.append(root_attribute)
+        root_edges = []
         for true_false in tf_array:
-            if true_false[0] == winner_attribute:
-                winner_edges = true_false[1]
-        winner_node = Node(entropy=winner_entropy, attribute=winner_attribute,  edges=winner_edges)
-        self.node_list.append(winner_node)
-        print(self.node_list[-1].print_node())
+            if true_false[0] == root_attribute:
+                root_edges = true_false[1]
+        root_node = Node(entropy=winner_entropy, attribute=root_attribute,  edges=root_edges, root=True)
+        self.node_list.append(root_node)
+
+        # Here we have the root node, for each edge, check which attribute gives the maximum gain
+        #while len(self.visited_attributes) != (len(data.columns) - 1):
+        #    for edge in self.node_list[-1].edges:
+

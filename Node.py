@@ -1,7 +1,8 @@
 
 
 class Node:
-    def __init__(self, entropy=None, father=None, edges=None, attribute=None, inner_edge=None):
+    def __init__(self, entropy=None, father=None, edges=None, attribute=None, inner_edge=None, root=None):
+        self.root = root
         self.father = father
         self.sons = []
         # The question
@@ -16,6 +17,7 @@ class Node:
         self.leaf = False
         self.decision = ''
         self.has_a_leaf()
+
 
     def print_node(self):
         print("Father: ", self.father)
