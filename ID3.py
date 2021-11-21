@@ -1,7 +1,6 @@
 import numpy as np
 import math
 import copy
-import graphviz
 from Node import Node
 
 
@@ -53,15 +52,13 @@ class ID3():
 
     def calculate_true_false(self, data, attribute):
         unique, counts = np.unique(data[attribute].to_numpy(), return_counts=True)
+        # print(unique, "Counts: ", counts)
         true_false = []
         for attribute_value in unique:
-            # Error here
-            true = len(np.where(data[attribute].to_numpy() == attribute_value))
-            true += len(data['Income'].to_numpy() == '<=50K')
-            false = len(np.where(data[attribute].to_numpy() == attribute_value ))
-            false += len(data['Income'].to_numpy() == '>50K')
-            true_false.append([attribute_value, true, false])
-        #print(true_false)
+            true = 0
+            false = 0
+            for index, row in data.iterrows():
+                if row[attribute] == attribute_value and row['Income']
         return true_false
 
     def id3(self, data):
@@ -78,4 +75,4 @@ class ID3():
         for attribute in tf_array:
             entropy_array.append(self.calculate_entropy_attribute(attribute))
             gain_array.append(self.calculate_gain_id3(self.calculate_entropy_attribute(attribute)))
-       # print(entropy_array)
+        # print(entropy_array)
