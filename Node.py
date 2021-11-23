@@ -1,9 +1,10 @@
 
 
 class Node:
-    def __init__(self, entropy=None, father=None, edges=None, attribute=None, inner_edge=None, root=None):
+    def __init__(self, entropy=None, father=None, edges=None, attribute=None, inner_edge=None, root=None, father_attribute=None):
         self.root = root
         self.father = father
+        self.father_attribute = father_attribute
         self.sons = []
         # The question
         self.inner_edge = inner_edge
@@ -60,11 +61,12 @@ class Node:
 
     # To see if the node has a leaf son
     def has_a_leaf(self):
-        for edge in self.edges:
-            if edge[1] == 0:
-                self.create_leaf_son(edge, '<=50K')
-                return True
-            elif edge[2] == 1:
-                self.create_leaf_son(edge, '>50K')
-                return True
+        if self.edges is not None:
+            for edge in self.edges:
+                if edge[1] == 0:
+                    self.create_leaf_son(edge, '<=50K')
+                    return True
+                elif edge[2] == 1:
+                    self.create_leaf_son(edge, '>50K')
+                    return True
         return False
