@@ -64,10 +64,11 @@ class ID3:
         else:
             data_true = data[0]
             data_false = data[1]
+            total_data = data_true.append(data_false, ignore_index=True)
             unique, counts = np.unique(data_true[attribute].to_numpy(), return_counts=True)
             for attribute_value in unique:
-                true_raw = data_true.loc[(data_true[attribute] == attribute_value) & (data_true['Income'] == '<=50K') & (data_true[node.attribute] == edge)]
-                false_raw = data_false.loc[(data_false[attribute] == attribute_value) & (data_false['Income'] == '>50K') & (data_false[node.attribute] == edge)]
+                true_raw = total_data.loc[(total_data[attribute] == attribute_value) & (total_data['Income'] == '<=50K') & (total_data[node.attribute] == edge)]
+                false_raw = total_data.loc[(total_data[attribute] == attribute_value) & (total_data['Income'] == '>50K') & (total_data[node.attribute] == edge)]
                 true_false.append([attribute_value, true_raw.shape[0], false_raw.shape[0], true_raw, false_raw])
         return true_false
 
