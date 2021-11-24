@@ -20,14 +20,6 @@ class Node:
         self.decision = ''
         self.create_leaf()
 
-
-    def print_node(self):
-        print("Father: ", self.father)
-        print("Inner Edge: ", self.inner_edge)
-        print("Edges: ", self.edges)
-        print("Sons: ", self.sons)
-        print("Entropy: ", self.entropy)
-
     # Getters
     def get_entropy(self):
         return self.entropy
@@ -54,6 +46,7 @@ class Node:
     # Methods
     def create_leaf_son(self, inner_edge, decision):
         son = Node(father=self, inner_edge=inner_edge, attribute=decision)
+        son.set_leaf()
         self.add_son(son)
 
     def add_son(self, son):
@@ -64,11 +57,14 @@ class Node:
         if self.edges is not None:
             for edge in self.edges:
                 if edge[1] == 0:
-                    self.create_leaf_son(edge, '<=50K')
-                elif edge[2] == 0:
                     self.create_leaf_son(edge, '>50K')
+                elif edge[2] == 0:
+                    self.create_leaf_son(edge, '<=50K')
 
     def show_tree(self, level=0):
-        print('\t' * level + repr(self.inner_edge) + repr(self.attribute))
+        if self.inner_edge is not None:
+            print('\t' * level + '|_', '(', self.attribute, ')', ' - ', self.inner_edge[0], '{', self.inner_edge[1], ',', self.inner_edge[2], '}' )
+        else:
+            print('\t' * level + self.attribute)
         for son in self.sons:
             son.show_tree(level+1)

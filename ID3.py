@@ -8,7 +8,7 @@ class ID3:
     def __init__(self):
         self.node_list = []
         self.visited_nodes = []
-        self.visited_attributes = []
+        self.used_attributes = []
         self.system_entropy = 0.0
         self.total_length = 0
         # true_false = [<=50K,>50K]
@@ -54,18 +54,20 @@ class ID3:
 
     def calculate_true_false(self, data, attribute, node=None, edge=None):
         # We have to do two cases, the root case and the other ones
-        unique, counts = np.unique(data[attribute].to_numpy(), return_counts=True)
         true_false = []
         if node is None:
+            unique, counts = np.unique(data[attribute].to_numpy(), return_counts=True)
             for attribute_value in unique:
                 true_raw = data.loc[(data[attribute] == attribute_value) & (data['Income'] == '<=50K')]
                 false_raw = data.loc[(data[attribute] == attribute_value) & (data['Income'] == '>50K')]
                 true_false.append([attribute_value, true_raw.shape[0], false_raw.shape[0], true_raw, false_raw])
         else:
-            # ['Divorced', 3761, 452]
+            data_true = data[0]
+            data_false = data[1]
+            unique, counts = np.unique(data_true[attribute].to_numpy(), return_counts=True)
             for attribute_value in unique:
-                true_raw = data.loc[(data[attribute] == attribute_value) & (data['Income'] == '<=50K') & (data[node.attribute] == edge)]
-                false_raw = data.loc[(data[attribute] == attribute_value) & (data['Income'] == '>50K') & (data[node.attribute] == edge)]
+                true_raw = data_true.loc[(data_true[attribute] == attribute_value) & (data_true['Income'] == '<=50K') & (data_true[node.attribute] == edge)]
+                false_raw = data_false.loc[(data_false[attribute] == attribute_value) & (data_false['Income'] == '>50K') & (data_false[node.attribute] == edge)]
                 true_false.append([attribute_value, true_raw.shape[0], false_raw.shape[0], true_raw, false_raw])
         return true_false
 
@@ -85,16 +87,19 @@ class ID3:
                 gains.append(gain[1])
             winner_index = gains.index(max(gains))
             winner_attribute, winner_entropy = entropy_array[winner_index][0], entropy_array[winner_index][1]
-            self.visited_attributes.append(winner_attribute)
+            self.used_attributes.append(winner_attribute)
             winner_edges = []
+            winner_data = []
             for true_false in tf_array:
                 if true_false[0] == winner_attribute:
                     winner_edges = true_false[1]
-                    # If there is no root node
+                    for edge_t in true_false[1]:
+                        winner_data.append(edge_t[3])
+                        winner_data.append(edge_t[4])
             if node is None:
-                winner_node = Node(entropy=winner_entropy, attribute=winner_attribute, edges=winner_edges, root=True, data=[])
+                winner_node = Node(entropy=winner_entropy, attribute=winner_attribute, edges=winner_edges, root=True, data=winner_data)
             else:
-                winner_node = Node(entropy=winner_entropy, attribute=winner_attribute, edges=winner_edges, inner_edge=edge, root=False, father=node, father_attribute=node.attribute, data=[])
+                winner_node = Node(entropy=winner_entropy, attribute=winner_attribute, edges=winner_edges, inner_edge=edge, root=False, father=node, father_attribute=node.attribute, data=winner_data)
                 node.add_son(winner_node)
             self.node_list.append(winner_node)
 
@@ -114,11 +119,12 @@ class ID3:
         else:
             self.visited_nodes.append(node)
             for edge in node.edges:
+                tf_array = []
                 for attribute in data.columns:
-                    if attribute != 'Income' and attribute not in self.visited_attributes:
+                    if attribute != 'Income' and attribute not in self.used_attributes:
                         # Example: [['Family', [['SI', 0, 2], ['NO', 2, 1]]], ['Gran', [['SI', 2, 1], ['NO', 3, 2]]]]
-                        tf_array.append([attribute, self.calculate_true_false(data, attribute, node, edge[0])])
-                self.chose_winner(tf_array, node, edge)
+                        tf_array.append([attribute, self.calculate_true_false(data=node.data, attribute=attribute, node=node, edge=edge[0])])
+                self.chose_winner(tf_array, node=node, edge=edge)
 
         next_node = None
         for node in self.node_list:
