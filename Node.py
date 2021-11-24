@@ -17,7 +17,7 @@ class Node:
         # Attributes for the final decision
         self.leaf = False
         self.decision = ''
-        self.has_a_leaf()
+        self.create_leaf()
 
 
     def print_node(self):
@@ -52,21 +52,22 @@ class Node:
 
     # Methods
     def create_leaf_son(self, inner_edge, decision):
-        son = Node(father=self, inner_edge=inner_edge)
-        son.set_decision(decision)
+        son = Node(father=self, inner_edge=inner_edge, attribute=decision)
         self.add_son(son)
 
     def add_son(self, son):
         self.sons.append(son)
 
     # To see if the node has a leaf son
-    def has_a_leaf(self):
+    def create_leaf(self):
         if self.edges is not None:
             for edge in self.edges:
                 if edge[1] == 0:
                     self.create_leaf_son(edge, '<=50K')
-                    return True
-                elif edge[2] == 1:
+                elif edge[2] == 0:
                     self.create_leaf_son(edge, '>50K')
-                    return True
-        return False
+
+    def show_tree(self, level=0):
+        print('\t' * level + repr(self.inner_edge) + repr(self.attribute))
+        for son in self.sons:
+            son.show_tree(level+1)

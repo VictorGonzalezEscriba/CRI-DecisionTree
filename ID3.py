@@ -72,6 +72,7 @@ class ID3:
     def chose_winner(self, tf_array, node=None, edge=None):
         # Calculate the entropy of each attribute
         entropy_array, gain_array = [], []
+
         # Calculate the Entropy
         for attribute in tf_array:
             entropy_array.append(self.calculate_entropy_attribute(attribute))
@@ -91,19 +92,12 @@ class ID3:
                 if true_false[0] == winner_attribute:
                     winner_edges = true_false[1]
                     # If there is no root node
-                    if node is None:
-                        winner_node = Node(entropy=winner_entropy, attribute=winner_attribute, edges=winner_edges,
-                                           root=True)
-                        self.node_list.append(winner_node)
-                    else:
-                        winner_node = Node(entropy=winner_entropy, attribute=winner_attribute, edges=winner_edges,
-                                           inner_edge=edge, root=False, father=node, father_attribute=node.attribute)
-                        self.node_list.append(winner_node)
-
-    def show_tree(self):
-        for node in self.node_list:
-            print("Node:", node.attribute, " - ", "Father: ", node.father_attribute, " - ", "Edge: ", node.inner_edge)
-
+            if node is None:
+                winner_node = Node(entropy=winner_entropy, attribute=winner_attribute, edges=winner_edges, root=True)
+            else:
+                winner_node = Node(entropy=winner_entropy, attribute=winner_attribute, edges=winner_edges, inner_edge=edge, root=False, father=node, father_attribute=node.attribute)
+                node.add_son(winner_node)
+            self.node_list.append(winner_node)
 
     def id3(self, data, node):
         # To calculate all the true_false of each attribute
@@ -118,6 +112,7 @@ class ID3:
                     # Example: [['Family', [['SI', 0, 2], ['NO', 2, 1]]], ['Gran', [['SI', 2, 1], ['NO', 3, 2]]]]
                     tf_array.append([attribute, self.calculate_true_false(data, attribute)])
             self.chose_winner(tf_array)
+            # print("Root node created")
         else:
             self.visited_nodes.append(node)
             for edge in node.edges:
@@ -136,4 +131,4 @@ class ID3:
         if len(self.visited_nodes) != (len(data.columns) - 1):
             return self.id3(data, next_node)
         else:
-            return self.show_tree()
+            return self.node_list[0].show_tree()
