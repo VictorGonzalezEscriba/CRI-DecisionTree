@@ -1,11 +1,12 @@
 
 
 class Node:
-    def __init__(self, entropy=None, father=None, edges=None, attribute=None, inner_edge=None, root=None, father_attribute=None):
+    def __init__(self, entropy=None, father=None, edges=None, attribute=None, inner_edge=None, root=None, father_attribute=None, data=None):
         self.root = root
         self.father = father
         self.father_attribute = father_attribute
         self.sons = []
+        self.data = data
         # The question
         self.inner_edge = inner_edge
         self.edges = edges

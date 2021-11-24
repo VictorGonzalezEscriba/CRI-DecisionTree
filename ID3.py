@@ -60,19 +60,18 @@ class ID3:
             for attribute_value in unique:
                 true_raw = data.loc[(data[attribute] == attribute_value) & (data['Income'] == '<=50K')]
                 false_raw = data.loc[(data[attribute] == attribute_value) & (data['Income'] == '>50K')]
-                true_false.append([attribute_value, true_raw.shape[0], false_raw.shape[0]])
+                true_false.append([attribute_value, true_raw.shape[0], false_raw.shape[0], true_raw, false_raw])
         else:
             # ['Divorced', 3761, 452]
             for attribute_value in unique:
                 true_raw = data.loc[(data[attribute] == attribute_value) & (data['Income'] == '<=50K') & (data[node.attribute] == edge)]
                 false_raw = data.loc[(data[attribute] == attribute_value) & (data['Income'] == '>50K') & (data[node.attribute] == edge)]
-                true_false.append([attribute_value, true_raw.shape[0], false_raw.shape[0]])
+                true_false.append([attribute_value, true_raw.shape[0], false_raw.shape[0], true_raw, false_raw])
         return true_false
 
     def chose_winner(self, tf_array, node=None, edge=None):
         # Calculate the entropy of each attribute
         entropy_array, gain_array = [], []
-
         # Calculate the Entropy
         for attribute in tf_array:
             entropy_array.append(self.calculate_entropy_attribute(attribute))
@@ -93,9 +92,9 @@ class ID3:
                     winner_edges = true_false[1]
                     # If there is no root node
             if node is None:
-                winner_node = Node(entropy=winner_entropy, attribute=winner_attribute, edges=winner_edges, root=True)
+                winner_node = Node(entropy=winner_entropy, attribute=winner_attribute, edges=winner_edges, root=True, data=[])
             else:
-                winner_node = Node(entropy=winner_entropy, attribute=winner_attribute, edges=winner_edges, inner_edge=edge, root=False, father=node, father_attribute=node.attribute)
+                winner_node = Node(entropy=winner_entropy, attribute=winner_attribute, edges=winner_edges, inner_edge=edge, root=False, father=node, father_attribute=node.attribute, data=[])
                 node.add_son(winner_node)
             self.node_list.append(winner_node)
 
@@ -112,7 +111,6 @@ class ID3:
                     # Example: [['Family', [['SI', 0, 2], ['NO', 2, 1]]], ['Gran', [['SI', 2, 1], ['NO', 3, 2]]]]
                     tf_array.append([attribute, self.calculate_true_false(data, attribute)])
             self.chose_winner(tf_array)
-            # print("Root node created")
         else:
             self.visited_nodes.append(node)
             for edge in node.edges:
