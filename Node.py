@@ -1,12 +1,11 @@
 
 
 class Node:
-    def __init__(self, entropy=None, father=None, edges=None, attribute=None, inner_edge=None, root=None, father_attribute=None, data=None):
+    def __init__(self, entropy=None, father=None, edges=None, attribute=None, inner_edge=None, root=None, father_attribute=None):
         self.root = root
         self.father = father
         self.father_attribute = father_attribute
         self.sons = []
-        self.data = data
         # The question
         self.inner_edge = inner_edge
         self.edges = edges
@@ -56,15 +55,19 @@ class Node:
     def create_leaf(self):
         if self.edges is not None:
             for edge in self.edges:
-                if edge[1] == 0:
-                    self.create_leaf_son(edge, '>50K')
-                elif edge[2] == 0:
-                    self.create_leaf_son(edge, '<=50K')
+                # To avoid {0,0}
+                if edge[1] == 0 and edge[2] == 0:
+                    pass
+                else:
+                    if edge[1] == 0:
+                        self.create_leaf_son(edge, '>50K')
+                    elif edge[2] == 0:
+                        self.create_leaf_son(edge, '<=50K')
 
     def show_tree(self, level=0):
-        if self.inner_edge is not None:
-            print('\t' * level + '|_', '(', self.attribute, ')', ' - ', self.inner_edge[0], '{', self.inner_edge[1], ',', self.inner_edge[2], '}' )
+        if len(self.inner_edge) != 2:
+            print('\t' * level + '|_', '(', self.attribute, ')', ' - ', self.inner_edge[0], '{', self.inner_edge[1], ',', self.inner_edge[2], '}')
         else:
-            print('\t' * level + self.attribute)
+            print('\t' * level + self.attribute + ' - ', '{', self.inner_edge[0], ',', self.inner_edge[1], '}')
         for son in self.sons:
             son.show_tree(level+1)
