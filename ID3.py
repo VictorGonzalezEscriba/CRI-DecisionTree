@@ -11,7 +11,6 @@ class ID3:
         self.used_attributes = []
         self.system_entropy = 0.0
         self.total_length = 0
-
         # true_false = [<=50K,>50K]
 
     def calculate_system_entropy(self, true_false):
@@ -93,7 +92,6 @@ class ID3:
                 gains.append(gain[1])
             winner_index = gains.index(max(gains))
             winner_attribute, winner_entropy = entropy_array[winner_index][0], entropy_array[winner_index][1]
-            self.used_attributes.append(winner_attribute)
             winner_edges = []
 
             # Search the winner node's edges
@@ -102,14 +100,20 @@ class ID3:
                     winner_edges = true_false[1]
 
             if node is None:
-                edge_r = 0
-                winner_node = Node(entropy=winner_entropy, attribute=winner_attribute, edges=winner_edges, root=True, inner_edge=edge)
+                winner_node = Node(entropy=winner_entropy, attribute=winner_attribute, edges=winner_edges, root=True, inner_edge=edge, father_list=[winner_attribute])
             else:
-                winner_node = Node(entropy=winner_entropy, attribute=winner_attribute, edges=winner_edges, inner_edge=edge, root=False, father=node, father_attribute=node.attribute)
+                n_father_list = copy.deepcopy(node.father_list)
+                n_father_list.append(winner_attribute)
+                winner_node = Node(entropy=winner_entropy, attribute=winner_attribute, edges=winner_edges, inner_edge=edge, root=False, father=node, father_attribute=node.attribute, father_list=n_father_list)
                 node.add_son(winner_node)
             self.node_list.append(winner_node)
 
     def id3(self, data, node):
+        # En profunditat haber visitat totos els atributs o haber arribat a un decisió
+        if node is not None:
+            if len(node.father_list) == (len(data.columns) - 1):
+                return self.node_list[0].show_tree()
+
         # To calculate all the true_false of each attribute
         tf_array = []
         if node is None:
@@ -128,7 +132,7 @@ class ID3:
                 if self.check_edge(node, edge):
                     tf_array = []
                     for attribute in data.columns:
-                        if attribute != 'Income' and attribute not in self.used_attributes:
+                        if attribute != 'Income' and attribute not in node.father_list:
                             # Example: [['Family', [['SI', 0, 2], ['NO', 2, 1]]], ['Gran', [['SI', 2, 1], ['NO', 3, 2]]]]
                             tf_array.append([attribute, self.calculate_true_false(data=data, attribute=attribute, node=node, edge=edge)])
                     self.chose_winner(tf_array=tf_array, node=node, edge=edge)
@@ -139,7 +143,4 @@ class ID3:
                 next_node = node
                 break
 
-        if len(self.visited_nodes) != (len(data.columns) - 1):
-            return self.id3(data, next_node)
-        else:
-            return self.node_list[0].show_tree()
+        return self.id3(data, next_node)

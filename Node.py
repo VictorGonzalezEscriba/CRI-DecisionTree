@@ -1,7 +1,7 @@
 
 
 class Node:
-    def __init__(self, entropy=None, father=None, edges=None, attribute=None, inner_edge=None, root=None, father_attribute=None):
+    def __init__(self, entropy=None, father=None, edges=None, attribute=None, inner_edge=None, root=None, father_attribute=None, father_list=None):
         self.root = root
         self.father = father
         self.father_attribute = father_attribute
@@ -18,6 +18,7 @@ class Node:
         self.leaf = False
         self.decision = ''
         self.create_leaf()
+        self.father_list = father_list
 
     # Getters
     def get_entropy(self):
@@ -66,8 +67,8 @@ class Node:
 
     def show_tree(self, level=0):
         if len(self.inner_edge) != 2:
-            print('\t' * level + '|_', '(', self.attribute, ')', ' - ', self.inner_edge[0], '{', self.inner_edge[1], ',', self.inner_edge[2], '}')
+            print('\t' * level + '|_', '(' + self.attribute + ')', ' - ', self.inner_edge[0], '{', self.inner_edge[1], ',', self.inner_edge[2], '}')
         else:
-            print('\t' * level + self.attribute + ' - ', '{', self.inner_edge[0], ',', self.inner_edge[1], '}')
+            print('\t' * level + '(' + self.attribute + ')', ' - ', '{', self.inner_edge[0], ',', self.inner_edge[1], '}')
         for son in self.sons:
             son.show_tree(level+1)
