@@ -46,13 +46,15 @@ def clean_dataset(d):
     return df.drop(['fnlwgt', "Education", "Relationship"], axis="columns")
 
 
-# Load the dataset
+def main():
+    # Load the dataset
+    dataset = load_dataset('data/adult.data')
+    data = clean_dataset(dataset)
+    # print(data)
+    # print(ID3().calculate_entropy_attribute(["Op.Major", [['Si', 0, 2], ['No', 2, 1]]]))
+    id3 = ID3()
+    id3.id3(data, node=None)
 
-dataset = load_dataset('data/adult.data')
-data = clean_dataset(dataset)
-# print(data)
-# print(ID3().calculate_entropy_attribute(["Op.Major", [['Si', 0, 2], ['No', 2, 1]]]))
-id3 = ID3()
-print(id3.id3(data, node=None))
 
+main()
 
