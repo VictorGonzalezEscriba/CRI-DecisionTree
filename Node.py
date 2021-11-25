@@ -5,6 +5,7 @@ class Node:
         self.root = root
         self.father = father
         self.father_attribute = father_attribute
+        self.father_list = father_list
         self.sons = []
         # The question
         self.inner_edge = inner_edge
@@ -16,9 +17,8 @@ class Node:
         self.visited = False
         # Attributes for the final decision
         self.leaf = False
-        self.decision = ''
         self.create_leaf()
-        self.father_list = father_list
+
 
     # Getters
     def get_entropy(self):
@@ -34,7 +34,7 @@ class Node:
     def set_attribute(self, attribute):
         self.attribute = attribute
 
-    def set_visited_true(self):
+    def set_visited(self):
         self.visited = True
 
     def set_leaf(self):
@@ -56,9 +56,14 @@ class Node:
     def create_leaf(self):
         if self.edges is not None:
             for edge in self.edges:
-                # To avoid {0,0}
+                # To avoid {0,0}, we chose the decision with more probability
                 if edge[1] == 0 and edge[2] == 0:
-                    pass
+                    true = self.inner_edge[1]
+                    false = self.inner_edge[2]
+                    if true > false:
+                        self.create_leaf_son(edge, '<=50K')
+                    else:
+                        self.create_leaf_son(edge, '>50K')
                 else:
                     if edge[1] == 0:
                         self.create_leaf_son(edge, '>50K')

@@ -110,8 +110,10 @@ class ID3:
 
     def id3(self, data, node):
         # En profunditat haber visitat totos els atributs o haber arribat a un decisió
-        if node is not None:
-            if len(node.father_list) == (len(data.columns) - 1):
+        if node is not None and node.father is not None:
+            self.node_list[0].show_tree()
+            print('\n\n')
+            if len(node.father_list) == (len(data.columns) - 1) or (node.inner_edge[1] == 0 and node.inner_edge[2] == 0):
                 return self.node_list[0].show_tree()
 
         # To calculate all the true_false of each attribute
@@ -127,7 +129,9 @@ class ID3:
                     tf_array.append([attribute, self.calculate_true_false(data=data, attribute=attribute)])
             self.chose_winner(tf_array=tf_array, edge=true_false)
         else:
+
             self.visited_nodes.append(node)
+            node.set_visited()
             for edge in node.edges:
                 if self.check_edge(node, edge):
                     tf_array = []

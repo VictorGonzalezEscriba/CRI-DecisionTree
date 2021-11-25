@@ -50,10 +50,10 @@ def main():
     # Load the dataset
     dataset = load_dataset('data/adult.data')
     data = clean_dataset(dataset)
-    # print(data[:100])
+    # print(data)
     # print(ID3().calculate_entropy_attribute(["Op.Major", [['Si', 0, 2], ['No', 2, 1]]]))
     id3 = ID3()
-    id3.id3(data, node=None)
+    id3.id3(data[:25], node=None)
 
 
 main()
