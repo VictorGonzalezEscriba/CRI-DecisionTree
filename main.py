@@ -1,7 +1,9 @@
 import pandas as pd
 import numpy as np
-from ID3 import ID3
+# from ID3 import ID3
+from Tree import *
 import time
+import math
 # To avoid pandas error/warning in cut/qcut
 pd.options.mode.chained_assignment = None
 
@@ -60,14 +62,22 @@ def main():
     data = clean_dataset(dataset, advanced=False)
     # print(data)
     # print(ID3().calculate_entropy_attribute(["Op.Major", [['Si', 0, 2], ['No', 2, 1]]]))
-    id3 = ID3()
+
+    # To calculate the first node
+
+    start = time.time()
+    tree = ID3(data=data)
+    end = time.time()
+    print((end - start) / 60)
+
+    """id3 = ID3()
     start = time.time()
     id3.id3(data[:1000], node=None)
     end = time.time()
     print(id3.show_tree())
     print((end-start)/60)
     # To see the accuracy
-    # print(cross_validation(data))
+    # print(cross_validation(data))"""
 
 
 main()
