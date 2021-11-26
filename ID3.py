@@ -109,12 +109,17 @@ class ID3:
             self.node_list.append(winner_node)
 
     def id3(self, data, node):
+        contador = 0
+        """
+        Condiciones de parada:
+        No quedan más atributos en una rama
+        Todas las hojas son decisiones
+        """
         # En profunditat haber visitat totos els atributs o haber arribat a un decisió
         if node is not None and node.father is not None:
-            self.node_list[0].show_tree()
             print('\n\n')
-            if len(node.father_list) == (len(data.columns) - 1) or (node.inner_edge[1] == 0 and node.inner_edge[2] == 0):
-                return self.node_list[0].show_tree()
+            if len(self.node_list) == 0:
+                return self.visited_nodes[0].show_tree()
 
         # To calculate all the true_false of each attribute
         tf_array = []
@@ -141,10 +146,8 @@ class ID3:
                             tf_array.append([attribute, self.calculate_true_false(data=data, attribute=attribute, node=node, edge=edge)])
                     self.chose_winner(tf_array=tf_array, node=node, edge=edge)
 
-        next_node = None
-        for node in self.node_list:
-            if node not in self.visited_nodes:
-                next_node = node
-                break
-
-        return self.id3(data, next_node)
+        if len(self.node_list) == 1:
+            return self.id3(data, self.node_list[0])
+        else:
+            for son in node.sons:
+                return self.id3(data, son)

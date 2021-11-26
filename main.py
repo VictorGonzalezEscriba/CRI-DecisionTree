@@ -15,9 +15,12 @@ def load_dataset(path):
 
 
 # Function to clean the data
-def clean_dataset(d):
+def clean_dataset(d, advanced):
     # Delete all the "?" values
-    df = d[~d.eq('?').any(1)]
+    if advanced:
+        return 0
+    else:
+        df = d[~d.eq('?').any(1)]
 
     # Treatment of continuous variables
     # We use pd.cut() because we can set the division of the labels
@@ -49,11 +52,11 @@ def clean_dataset(d):
 def main():
     # Load the dataset
     dataset = load_dataset('data/adult.data')
-    data = clean_dataset(dataset)
+    data = clean_dataset(dataset, advanced=False)
     # print(data)
     # print(ID3().calculate_entropy_attribute(["Op.Major", [['Si', 0, 2], ['No', 2, 1]]]))
     id3 = ID3()
-    id3.id3(data[:25], node=None)
+    id3.id3(data[:5000], node=None)
 
 
 main()
