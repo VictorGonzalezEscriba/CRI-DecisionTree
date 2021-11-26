@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 from ID3 import ID3
+import time
 # To avoid pandas error/warning in cut/qcut
 pd.options.mode.chained_assignment = None
 
@@ -18,7 +19,7 @@ def load_dataset(path):
 def clean_dataset(d, advanced):
     # Delete all the "?" values
     if advanced:
-        return 0
+        print("TODO")
     else:
         df = d[~d.eq('?').any(1)]
 
@@ -49,6 +50,10 @@ def clean_dataset(d, advanced):
     return df.drop(['fnlwgt', "Education", "Relationship"], axis="columns")
 
 
+def cross_validation(data, cv=5):
+    return 0
+
+
 def main():
     # Load the dataset
     dataset = load_dataset('data/adult.data')
@@ -56,7 +61,13 @@ def main():
     # print(data)
     # print(ID3().calculate_entropy_attribute(["Op.Major", [['Si', 0, 2], ['No', 2, 1]]]))
     id3 = ID3()
-    id3.id3(data[:5000], node=None)
+    start = time.time()
+    id3.id3(data[:1000], node=None)
+    end = time.time()
+    print(id3.show_tree())
+    print((end-start)/60)
+    # To see the accuracy
+    # print(cross_validation(data))
 
 
 main()

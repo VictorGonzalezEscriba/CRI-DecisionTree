@@ -52,6 +52,12 @@ class Node:
     def add_son(self, son):
         self.sons.append(son)
 
+    def is_decision(self):
+        if self.attribute == '>50K' or self.attribute == '<=50K':
+            return True
+        else:
+            return False
+
     # To see if the node has a leaf son
     def create_leaf(self):
         if self.edges is not None:

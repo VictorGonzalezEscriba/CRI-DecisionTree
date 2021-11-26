@@ -13,6 +13,9 @@ class ID3:
         self.total_length = 0
         # true_false = [<=50K,>50K]
 
+    def show_tree(self):
+        print(self.node_list[0].show_tree())
+
     def calculate_system_entropy(self, true_false):
         total_length = true_false[0] + true_false[1]
         if true_false[0] == 0:
@@ -109,17 +112,16 @@ class ID3:
             self.node_list.append(winner_node)
 
     def id3(self, data, node):
-        contador = 0
         """
         Condiciones de parada:
         No quedan más atributos en una rama
         Todas las hojas son decisiones
         """
+
         # En profunditat haber visitat totos els atributs o haber arribat a un decisió
         if node is not None and node.father is not None:
-            print('\n\n')
-            if len(self.node_list) == 0:
-                return self.visited_nodes[0].show_tree()
+            if node.is_decision():
+                return 0
 
         # To calculate all the true_false of each attribute
         tf_array = []
@@ -147,7 +149,7 @@ class ID3:
                     self.chose_winner(tf_array=tf_array, node=node, edge=edge)
 
         if len(self.node_list) == 1:
-            return self.id3(data, self.node_list[0])
+            self.id3(data, self.node_list[0])
         else:
             for son in node.sons:
-                return self.id3(data, son)
+                self.id3(data, son)
