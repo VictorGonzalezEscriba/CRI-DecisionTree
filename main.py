@@ -59,25 +59,24 @@ def cross_validation(data, cv=5):
 def main():
     # Load the dataset
     dataset = load_dataset('data/adult.data')
+
+    # Process dataset
     data = clean_dataset(dataset, advanced=False)
-    # print(data)
-    # print(ID3().calculate_entropy_attribute(["Op.Major", [['Si', 0, 2], ['No', 2, 1]]]))
 
-    # To calculate the first node
-
+    """
+    ### Entropy ### 
+    # ID3
     start = time.time()
-    tree = ID3(data=data)
+    tree = ID3(data)
     end = time.time()
     print((end - start) / 60)
 
-    """id3 = ID3()
+    # C.45
     start = time.time()
-    id3.id3(data[:1000], node=None)
+    tree = C45(data)
     end = time.time()
-    print(id3.show_tree())
-    print((end-start)/60)
-    # To see the accuracy
-    # print(cross_validation(data))"""
+    print((end - start) / 60)
+    """
 
 
 main()
