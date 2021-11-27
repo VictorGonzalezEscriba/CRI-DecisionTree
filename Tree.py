@@ -4,10 +4,11 @@ import copy
 
 
 class Node:
-    def __init__(self, father=None, attribute=None, entropy=None, edges=None, inner_edge=None, father_list=None, gini=None):
+    def __init__(self, father=None, attribute=None, entropy=None, edges=None, inner_edge=None, father_list=None, gini=None, print=None):
         self.father = father
         self.sons = []
         self.attribute = attribute
+        self.print = print
         self.entropy = entropy
         self.gini = gini
         self.edges = edges
@@ -20,14 +21,14 @@ class Node:
 
     def show_tree(self, level=0):
         if not self.root:
-            print('\t' * level + '|_', '(' + self.attribute + ')', ' - ', self.inner_edge.value, '{', self.inner_edge.true, ',', self.inner_edge.false, '}')
+            print('\t' * level + '|_', '(' + self.print + ')', ' - ', self.inner_edge.value, '{', self.inner_edge.true, ',', self.inner_edge.false, '}')
         else:
-            print('\t' * level + '(' + self.attribute + ')', ' - ', '{', self.inner_edge.true, ',', self.inner_edge.false, '}')
+            print('\t' * level + '(' + self.print + ')', ' - ', '{', self.inner_edge.true, ',', self.inner_edge.false, '}')
         for son in self.sons:
             son.show_tree(level+1)
 
     def create_leaf_son(self, inner_edge, decision):
-        son = Node(father=self, inner_edge=inner_edge, attribute=decision)
+        son = Node(father=self, inner_edge=inner_edge, attribute='Income', print=decision)
         son.leaf = True
         self.sons.append(son)
 
@@ -40,8 +41,15 @@ class Node:
                     false = self.inner_edge.false
                     if true > false:
                         self.create_leaf_son(edge, '<=50K')
-                    else:
+                    elif true < false:
                         self.create_leaf_son(edge, '>50K')
+                    elif true == false:
+                        true_f = self.father.inner_edge.true
+                        false_f = self.father.inner_edge.false
+                        if true_f > false_f:
+                            self.create_leaf_son(edge, '<=50K')
+                        else:
+                            self.create_leaf_son(edge, '>50K')
                 else:
                     if edge.true == 0:
                         self.create_leaf_son(edge, '>50K')
@@ -49,7 +57,7 @@ class Node:
                         self.create_leaf_son(edge, '<=50K')
 
     def is_decision(self):
-        if self.attribute == '>50K' or self.attribute == '<=50K':
+        if self.print == '>50K' or self.print == '<=50K':
             return True
         else:
             return False
@@ -112,8 +120,6 @@ class ID3:
         else:
             total_length = self.total_length
         gini = 0.0
-        total_t = 0
-        total_f = 0
         for attribute_value in attribute_array[1]:
             total = attribute_value.true + attribute_value.false
             gini += (total / total_length) ** 2
@@ -187,9 +193,9 @@ class ID3:
             edge.data_false = edge.data_false.drop([node.father.attribute], axis=1)
 
         if self.criteria == 'e':
-            winner_node = Node(entropy=winner_entropy, attribute=winner_attribute, edges=winner_edges, father=node, inner_edge=edge, father_list=n_father_list)
+            winner_node = Node(entropy=winner_entropy, attribute=winner_attribute, print=winner_attribute, edges=winner_edges, father=node, inner_edge=edge, father_list=n_father_list)
         else:
-            winner_node = Node(gini=winner_gini, attribute=winner_attribute, edges=winner_edges, father=node, inner_edge=edge, father_list=n_father_list)
+            winner_node = Node(gini=winner_gini, attribute=winner_attribute, print=winner_attribute, edges=winner_edges, father=node, inner_edge=edge, father_list=n_father_list)
         node.sons.append(winner_node)
         return winner_node
 
@@ -258,9 +264,9 @@ class ID3:
 
         inner_edge = Edge(value='System', true=self.system_tf[0], false=self.system_tf[1], data_true=self.system_data_true, data_false=self.system_data_false)
         if self.criteria == 'e':
-            root = Node(entropy=winner_entropy, attribute=winner_attribute, edges=winner_edges, father=None, inner_edge=inner_edge, father_list=[winner_attribute])
+            root = Node(entropy=winner_entropy, attribute=winner_attribute, print=winner_attribute, edges=winner_edges, father=None, inner_edge=inner_edge, father_list=[winner_attribute])
         else:
-            root = Node(gini=winner_gini, attribute=winner_attribute, edges=winner_edges, father=None,inner_edge=inner_edge, father_list=[winner_attribute])
+            root = Node(gini=winner_gini, attribute=winner_attribute, print=winner_attribute, edges=winner_edges, father=None, inner_edge=inner_edge, father_list=[winner_attribute])
         root.root = True
         return root
 
@@ -287,6 +293,17 @@ class ID3:
 
         for son in node.sons:
             self.id3(son)
+
+    def predict(self, test):
+        predictions = []
+        node = self.root
+        for i, row in test.iterrows():
+            while not node.is_decision():
+                for son in node.sons:
+                    if son.inner_edge.value == row[node.attribute]:
+                        node = son
+            predictions.append(node.print)
+        return np.array(predictions)
 
 
 class C45:
@@ -435,9 +452,9 @@ class C45:
             edge.data_true = edge.data_true.drop([node.father.attribute], axis=1)
             edge.data_false = edge.data_false.drop([node.father.attribute], axis=1)
         if self.criteria == 'e':
-            winner_node = Node(entropy=winner_entropy, attribute=winner_attribute, edges=winner_edges, father=node, inner_edge=edge, father_list=n_father_list)
+            winner_node = Node(entropy=winner_entropy, attribute=winner_attribute, print=winner_attribute, edges=winner_edges, father=node, inner_edge=edge, father_list=n_father_list)
         else:
-            winner_node = Node(gini=winner_gini, attribute=winner_attribute, edges=winner_edges, father=node, inner_edge=edge, father_list=n_father_list)
+            winner_node = Node(gini=winner_gini, attribute=winner_attribute, print=winner_attribute, edges=winner_edges, father=node, inner_edge=edge, father_list=n_father_list)
         node.sons.append(winner_node)
         return winner_node
 
@@ -448,12 +465,12 @@ class C45:
         unique = np.unique(data[attribute].to_numpy())
         for attribute_value in unique:
             if node.root:
-                true_raw = data.loc[(data[attribute] == attribute_value) & (data['Income'] == '<=50K') & (                data[node.attribute] == edge.value)]
-                false_raw = data.loc[(data[attribute] == attribute_value) & (data['Income'] == '>50K') & (                data[node.attribute] == edge.value)]
+                true_raw = data.loc[(data[attribute] == attribute_value) & (data['Income'] == '<=50K') & (data[node.attribute] == edge.value)]
+                false_raw = data.loc[(data[attribute] == attribute_value) & (data['Income'] == '>50K') & (data[node.attribute] == edge.value)]
             else:
                 true_raw = edge.data_true.loc[(edge.data_true[attribute] == attribute_value) & (edge.data_true['Income'] == '<=50K') & (edge.data_true[node.attribute] == edge.value)]
                 false_raw = edge.data_false.loc[(edge.data_false[attribute] == attribute_value) & (edge.data_false['Income'] == '>50K') & (edge.data_false[node.attribute] == edge.value)]
-            new_edge = Edge(value=attribute_value, true=true_raw.shape[0], false=false_raw.shape[0],data_true=true_raw, data_false=false_raw)
+            new_edge = Edge(value=attribute_value, true=true_raw.shape[0], false=false_raw.shape[0], data_true=true_raw, data_false=false_raw)
             true_false.append(new_edge)
         return true_false
 
@@ -512,9 +529,9 @@ class C45:
                 winner_edges = true_false[1]
         inner_edge = Edge(value='System', true=self.system_tf[0], false=self.system_tf[1],data_true=self.system_data_true, data_false=self.system_data_false)
         if self.criteria == 'e':
-            root = Node(entropy=winner_entropy, attribute=winner_attribute, edges=winner_edges, father=None, inner_edge=inner_edge, father_list=[winner_attribute])
+            root = Node(entropy=winner_entropy, attribute=winner_attribute, print=winner_attribute, edges=winner_edges, father=None, inner_edge=inner_edge, father_list=[winner_attribute])
         else:
-            root = Node(gini=winner_gini, attribute=winner_attribute, edges=winner_edges, father=None,inner_edge=inner_edge, father_list=[winner_attribute])
+            root = Node(gini=winner_gini, attribute=winner_attribute, print=winner_attribute, edges=winner_edges, father=None,inner_edge=inner_edge, father_list=[winner_attribute])
         root.root = True
         return root
 
@@ -542,3 +559,13 @@ class C45:
         for son in node.sons:
             self.c45(son)
 
+    def predict(self, test):
+        predictions = []
+        node = self.root
+        for i, row in test.iterrows():
+            while not node.is_decision():
+                for son in node.sons:
+                    if son.inner_edge.value == row[node.attribute]:
+                        node = son
+            predictions.append(node.print)
+        return np.array(predictions)
