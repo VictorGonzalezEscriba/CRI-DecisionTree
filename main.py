@@ -18,12 +18,11 @@ def load_dataset(path):
 
 
 # Function to clean the data
-def clean_dataset(d, advanced):
-    # Delete all the "?" values
-    if advanced:
-        print("TODO")
-    else:
-        df = d[~d.eq('?').any(1)]
+def clean_dataset(df, advanced):
+    # For the advanced settings, we consider the "?" values as a possible value
+    if not advanced:
+        # Delete all the "?" values
+        df = df[~df.eq('?').any(1)]
 
     # Treatment of continuous variables
     # We use pd.cut() because we can set the division of the labels
@@ -52,32 +51,30 @@ def clean_dataset(d, advanced):
     return df.drop(['fnlwgt', "Education", "Relationship"], axis="columns")
 
 
-def cross_validation(data, cv=5):
-    return 0
-
-
 def main():
     # Load the dataset
     dataset = load_dataset('data/adult.data')
 
     # Process dataset
-    data = clean_dataset(dataset, advanced=False)
-
+    data = clean_dataset(dataset, advanced=True)
+    train, data = split_data(data[:100])
+    print('hola')
     """
-    ### Entropy ### 
     # ID3
     start = time.time()
-    tree = ID3(data)
+    # Criteria: 'e' for entropy, 'g' for gini
+    tree = ID3(data, criteria='e')
     end = time.time()
     print((end - start) / 60)
+
 
     # C.45
     start = time.time()
-    tree = C45(data)
+    # Criteria: 'e' for entropy, 'g' for gini
+    tree = C45(data, criteria='e')
     end = time.time()
     print((end - start) / 60)
     """
-
 
 main()
 
