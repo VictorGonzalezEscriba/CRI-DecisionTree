@@ -35,7 +35,7 @@ def clean_dataset(df, advanced):
     # Maybe add a new attribute continent and compare
     df.loc[df["NativeCountry"].isin(['United-States', 'Canada', 'Columbia']), "NativeCountry"] = 'NorthAmerica'
     df.loc[df["NativeCountry"].isin(['Ecuador', 'Puerto-Rico', 'Cuba', 'Honduras', 'Jamaica', 'Mexico',
-                                     'Dominican-Republic', 'Haiti', 'Guatemala','Nicaragua', 'El-Salvador',
+                                     'Dominican-Republic', 'Haiti', 'Guatemala', 'Nicaragua', 'El-Salvador',
                                      'Trinadad&Tobago', 'Peru']), "NativeCountry"] = 'SouthAmerica'
     df.loc[df["NativeCountry"].isin(['England', 'Germany', 'Greece', 'Italy', 'Poland', 'Portugal', 'Ireland',
                                      'France', 'Hungary', 'Scotland', 'Yugoslavia', 'Holand-Netherlands']), "NativeCountry"] = 'Europe'
@@ -58,15 +58,15 @@ def split_data(data, max=0.8):
 
 
 # method can be 'ID3' or 'C45', criteria can be 'e' for entropy or 'g' for gini
-def cross_validation(data, k=5, method='ID3', criteria='e'):
-    total_acc = []
+def cross_validation(data, k=5, algorithm='ID3', criteria='e'):
+    total_acc = deque()
     for i in range(k):
         print('K: ', i)
         train, test = split_data(data)
         expected = test['Income']
         correct = 0
 
-        tree = Tree(train, algorithm=method, criteria=criteria)
+        tree = Tree(train, algorithm=algorithm, criteria=criteria)
         predictions = tree.predict(test)
 
         for p, c in zip(predictions, expected):
@@ -82,13 +82,13 @@ def main():
     dataset = load_dataset('data/adult.data')
 
     # Process dataset
-    data = clean_dataset(dataset, advanced=False)
+    data = clean_dataset(dataset, advanced=True)
 
     # To see the mean accuracy
     start = time.time()
-    print("Accuracy: ", cross_validation(data[:1000], k=5, method='ID3', criteria='e'))
+    print("Accuracy: ", cross_validation(data, k=5, algorithm='ID3', criteria='e'))
     end = time.time()
-    print(end-start)
+    print((end-start) / 60)
 
 
 main()
