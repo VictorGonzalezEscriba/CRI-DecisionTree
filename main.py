@@ -1,7 +1,7 @@
 import pandas as pd
-import numpy as np
 from Tree import *
 import time
+import numpy as np
 
 # To avoid pandas error/warning in cut/qcut
 pd.options.mode.chained_assignment = None
@@ -56,39 +56,39 @@ def split_data(data, max=0.8):
     test = data[~aux]
     return train, test
 
-# method can be 'id3' or 'c45', criteria can be 'e' for entropy or 'g' for gini
-def cross_validation(data, cv=5, method='id3', criteria='e'):
+
+# method can be 'ID3' or 'C45', criteria can be 'e' for entropy or 'g' for gini
+def cross_validation(data, k=5, method='ID3', criteria='e'):
     total_acc = []
-    for i in range(cv):
-        print('CV: ', i)
+    for i in range(k):
+        print('K: ', i)
         train, test = split_data(data)
-        predictions = []
         expected = test['Income']
         correct = 0
 
-        if method == 'id3':
-            id3 = ID3(train, criteria)
-            predictions = id3.predict(test)
-        elif method == 'c45':
-            c45 = C45(train, criteria)
-            predictions = c45.predict(test)
+        tree = Tree(train, algorithm=method, criteria=criteria)
+        predictions = tree.predict(test)
 
         for p, c in zip(predictions, expected):
             if p == c:
                 correct += 1
 
         total_acc.append(correct / predictions.shape[0])
-    return sum(total_acc) / cv
+    return sum(total_acc) / k
+
 
 def main():
     # Load the dataset
     dataset = load_dataset('data/adult.data')
 
     # Process dataset
-    data = clean_dataset(dataset, advanced=True)
+    data = clean_dataset(dataset, advanced=False)
 
     # To see the mean accuracy
-    print("Accuracy: ", cross_validation(data[:100], cv=5, method='id3', criteria='e'))
+    start = time.time()
+    print("Accuracy: ", cross_validation(data[:1000], k=5, method='ID3', criteria='e'))
+    end = time.time()
+    print(end-start)
 
 
 main()
