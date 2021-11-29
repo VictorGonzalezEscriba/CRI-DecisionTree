@@ -76,17 +76,18 @@ class Edge:
 class Tree:
     def __init__(self, data, algorithm, criteria):
         self.system_tf = [np.count_nonzero(data['Income'].to_numpy() == '<=50K'), np.count_nonzero(data['Income'].to_numpy() == '>50K')]
-        self.system_data_true = data['Income'] == '<=50K'
-        self.system_data_false = data['Income'] == '>50K'
-        self.total_length = data.shape[0]
+        self.total_length = self.system_tf[0] + self.system_tf[1]
         self.criteria = criteria
         self.algorithm = algorithm
         if self.criteria == 'e':
             self.system_entropy = self.calculate_system_entropy(self.system_tf)
         elif self.criteria == 'g':
             self.system_gini = self.calculate_system_gini(self.system_tf)
-        self.data = data
-        self.root = self.create_root(data)
+        self.attributes = data.columns
+        self.data = data.to_numpy()
+        self.data_true = self.data[self.data[:, - 1] == '<=50K']
+        self.data_false = self.data[self.data[:, -1] == '>50K']
+        self.root = self.create_root()
         self.expand_tree(self.root)
         self.root.show_tree(level=0)
 
@@ -210,10 +211,6 @@ class Tree:
             n_father_list = copy.deepcopy(node.father_list)
             n_father_list.append(winner_attribute)
 
-            if node.father is not None:
-                edge.data_true = edge.data_true.drop([node.father.attribute], axis=1)
-                edge.data_false = edge.data_false.drop([node.father.attribute], axis=1)
-
             if self.criteria == 'e':
                 winner_node = Node(entropy=winner_entropy, attribute=winner_attribute, print=winner_attribute, edges=winner_edges, father=node, inner_edge=edge, father_list=n_father_list)
             else:
@@ -265,9 +262,7 @@ class Tree:
 
             n_father_list = copy.deepcopy(node.father_list)
             n_father_list.append(winner_attribute)
-            if node.father is not None:
-                edge.data_true = edge.data_true.drop([node.father.attribute], axis=1)
-                edge.data_false = edge.data_false.drop([node.father.attribute], axis=1)
+
             if self.criteria == 'e':
                 winner_node = Node(entropy=winner_entropy, attribute=winner_attribute, print=winner_attribute,
                                    edges=winner_edges, father=node, inner_edge=edge, father_list=n_father_list)
@@ -277,51 +272,52 @@ class Tree:
             node.sons.append(winner_node)
             return winner_node
 
-    def calculate_true_false(self, data=None, attribute=None, node=None, edge=None):
+    def calculate_true_false(self, index=None, node=None, edge=None):
         # We have to do two cases, the root case and the other ones
         true_false = deque()
+        node_index = 0
+        for i, v in enumerate(self.attributes):
+            if v == node.attribute:
+                node_index = i
+                break
         # To save the attributes
-        unique = np.unique(data[attribute].to_numpy())
+        unique = np.unique(self.data[:, index])
         for attribute_value in unique:
-            if node.root:
-                true_raw = data.loc[(data[attribute] == attribute_value) & (data['Income'] == '<=50K') & (data[node.attribute] == edge.value)]
-                false_raw = data.loc[(data[attribute] == attribute_value) & (data['Income'] == '>50K') & (data[node.attribute] == edge.value)]
-            else:
-                true_raw = edge.data_true.loc[(edge.data_true[attribute] == attribute_value) & (edge.data_true['Income'] == '<=50K') & (edge.data_true[node.attribute] == edge.value)]
-                false_raw = edge.data_false.loc[(edge.data_false[attribute] == attribute_value) & (edge.data_false['Income'] == '>50K') & (edge.data_false[node.attribute] == edge.value)]
-            new_edge = Edge(value=attribute_value, true=true_raw.shape[0], false=false_raw.shape[0], data_true=true_raw, data_false=false_raw)
+            true_raw = np.count_nonzero(edge.data_true[:, index] == attribute_value)
+            false_raw = np.count_nonzero(edge.data_false[:, index] == attribute_value)
+            data_true = edge.data_true[edge.data_true[:, index] == attribute_value]
+            data_false = edge.data_false[edge.data_false[:, index] == attribute_value]
+            new_edge = Edge(value=attribute_value, true=true_raw, false=false_raw, data_true=data_true, data_false=data_false)
             true_false.append(new_edge)
         return true_false
 
-    def create_root(self, data):
+    def create_root(self):
         tf_array = deque()
-        for attribute in data.columns:
+        for i in range(0, len(self.data[0]) - 1):
             true_false = deque()
-            if attribute != 'Income':
-                unique = np.unique(data[attribute].to_numpy())
-                for attribute_value in unique:
-                    true_raw = data.loc[(data[attribute] == attribute_value) & (data['Income'] == '<=50K')]
-                    false_raw = data.loc[(data[attribute] == attribute_value) & (data['Income'] == '>50K')]
-                    edge = Edge(value=attribute_value, true=true_raw.shape[0], false=false_raw.shape[0])
-                    true_false.append(edge)
-                tf_array.append([attribute, true_false])
+            unique = np.unique(self.data[:, i])
+            for attribute_value in unique:
+                true_raw = np.count_nonzero(self.data_true[:, i] == attribute_value)
+                false_raw = np.count_nonzero(self.data_false[:, i] == attribute_value)
+                data_true = self.data_true[self.data_true[:, i] == attribute_value]
+                data_false = self.data_false[self.data_false[:, i] == attribute_value]
+                edge = Edge(value=attribute_value, true=true_raw, false=false_raw, data_true=data_true, data_false=data_false)
+                true_false.append(edge)
+            tf_array.append([self.attributes[i], true_false])
 
         winner_entropy, winner_gini = None, None
         if self.algorithm == 'ID3':
             if self.criteria == 'e':
                 # Calculate the entropy of each attribute
-                entropy_array, gain_array = deque(), deque()
+                entropy_array = deque()
                 # Calculate the Entropy
                 for attribute in tf_array:
                     entropy_array.append(self.calculate_entropy_attribute(attribute))
-                # Calculate the Gain
-                for entropy in entropy_array:
-                    gain_array.append([entropy[0], self.system_entropy - entropy[1]])
-                    # Creating the winner node
+
                 gains = deque()
-                for gain in gain_array:
-                    gains.append(gain[1])
-                winner_index = gains.index(max(gains))
+                for entropy in entropy_array:
+                    gains.append(entropy[1])
+                winner_index = gains.index(min(gains))
                 winner_attribute, winner_entropy = entropy_array[winner_index][0], entropy_array[winner_index][1]
             else:
                 # Gini
@@ -341,7 +337,7 @@ class Tree:
                 if true_false[0] == winner_attribute:
                     winner_edges = true_false[1]
 
-            inner_edge = Edge(value='System', true=self.system_tf[0], false=self.system_tf[1], data_true=self.system_data_true, data_false=self.system_data_false)
+            inner_edge = Edge(value='System', true=self.system_tf[0], false=self.system_tf[1])
             if self.criteria == 'e':
                 root = Node(entropy=winner_entropy, attribute=winner_attribute, print=winner_attribute, edges=winner_edges, father=None, inner_edge=inner_edge, father_list=[winner_attribute])
             else:
@@ -388,8 +384,7 @@ class Tree:
             for true_false in tf_array:
                 if true_false[0] == winner_attribute:
                     winner_edges = true_false[1]
-            inner_edge = Edge(value='System', true=self.system_tf[0], false=self.system_tf[1],
-                              data_true=self.system_data_true, data_false=self.system_data_false)
+            inner_edge = Edge(value='System', true=self.system_tf[0], false=self.system_tf[1])
             if self.criteria == 'e':
                 root = Node(entropy=winner_entropy, attribute=winner_attribute, print=winner_attribute,
                             edges=winner_edges, father=None, inner_edge=inner_edge, father_list=[winner_attribute])
@@ -407,17 +402,18 @@ class Tree:
 
     def expand_tree(self, node):
         # Condicion de salida los datos del nodo són una decision
-        if node.is_decision() or len(node.father_list) == (len(self.data.columns) - 1):
+        if node.is_decision() or len(node.father_list) == (len(self.attributes) - 1):
             return
 
         for edge in node.edges:
             if self.check_edge(node, edge):
                 tf_array = deque()
-                for attribute in self.data.columns:
-                    if node.father is not None and attribute != 'Income' and attribute not in node.father_list:
-                        tf_array.append([attribute, self.calculate_true_false(data=self.data, attribute=attribute, node=node, edge=edge)])
+                for i in range(0, len(self.data[0]) - 1):
+                    attribute = self.attributes[i]
+                    if node.father is not None and attribute not in node.father_list:
+                        tf_array.append([attribute, self.calculate_true_false(index=i, node=node, edge=edge)])
                     elif attribute != 'Income' and attribute not in node.father_list:
-                        tf_array.append([attribute, self.calculate_true_false(data=self.data, attribute=attribute, node=node, edge=edge)])
+                        tf_array.append([attribute, self.calculate_true_false(index=i, node=node, edge=edge)])
                 self.choose_winner(tf_array=tf_array, node=node, edge=edge)
 
         for son in node.sons:

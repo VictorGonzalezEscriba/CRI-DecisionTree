@@ -82,14 +82,18 @@ def main():
     dataset = load_dataset('data/adult.data')
 
     # Process dataset
-    data = clean_dataset(dataset, advanced=True)
-
+    data = clean_dataset(dataset, advanced=False)
+    start = time.time()
+    Tree(data, algorithm='ID3', criteria='g')
+    end = time.time()
+    print((end - start) / 60)
+    """
     # To see the mean accuracy
     start = time.time()
-    print("Accuracy: ", cross_validation(data, k=5, algorithm='ID3', criteria='e'))
+    print("Accuracy: ", cross_validation(data[:100], k=5, algorithm='ID3', criteria='e'))
     end = time.time()
     print((end-start) / 60)
-
+    """
 
 main()
 
