@@ -87,6 +87,7 @@ class Tree:
         self.data = data.to_numpy()
         self.data_true = self.data[self.data[:, - 1] == '<=50K']
         self.data_false = self.data[self.data[:, -1] == '>50K']
+        self.node_list = deque()
         self.root = self.create_root()
         self.expand_tree(self.root)
         self.root.show_tree(level=0)
@@ -216,8 +217,9 @@ class Tree:
             else:
                 winner_node = Node(gini=winner_gini, attribute=winner_attribute, print=winner_attribute, edges=winner_edges, father=node, inner_edge=edge, father_list=n_father_list)
             node.sons.append(winner_node)
+            self.node_list.append(winner_node)
             return winner_node
-        elif self.algorithm == 'C45':
+        elif self.algorithm == 'C4.5':
             if self.criteria == 'e':
                 # Calculate the entropy of each attribute
                 entropy_array, gain_array, split_array = deque(), deque(), deque()
@@ -270,6 +272,7 @@ class Tree:
                 winner_node = Node(gini=winner_gini, attribute=winner_attribute, print=winner_attribute,
                                    edges=winner_edges, father=node, inner_edge=edge, father_list=n_father_list)
             node.sons.append(winner_node)
+            self.node_list.append(winner_node)
             return winner_node
 
     def calculate_true_false(self, index=None, node=None, edge=None):
@@ -343,8 +346,9 @@ class Tree:
             else:
                 root = Node(gini=winner_gini, attribute=winner_attribute, print=winner_attribute, edges=winner_edges, father=None, inner_edge=inner_edge, father_list=[winner_attribute])
             root.root = True
+            self.node_list.append(root)
             return root
-        elif self.algorithm == 'C45':
+        elif self.algorithm == 'C4.5':
             if self.criteria == 'e':
                 # Calculate the entropy of each attribute
                 entropy_array, gain_array, split_array = deque(), deque(), deque()
@@ -392,6 +396,7 @@ class Tree:
                 root = Node(gini=winner_gini, attribute=winner_attribute, print=winner_attribute, edges=winner_edges,
                             father=None, inner_edge=inner_edge, father_list=[winner_attribute])
             root.root = True
+            self.node_list.append(root)
             return root
 
     def check_edge(self, node, edge):
@@ -429,3 +434,4 @@ class Tree:
                         node = son
             predictions.append(node.print)
         return np.array(predictions)
+

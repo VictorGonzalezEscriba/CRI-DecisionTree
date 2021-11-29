@@ -57,7 +57,7 @@ def split_data(data, max=0.8):
     return train, test
 
 
-# method can be 'ID3' or 'C45', criteria can be 'e' for entropy or 'g' for gini
+# method can be 'ID3' or 'C4.5', criteria can be 'e' for entropy or 'g' for gini
 def cross_validation(data, k=5, algorithm='ID3', criteria='e'):
     total_acc = deque()
     for i in range(k):
@@ -83,17 +83,14 @@ def main():
 
     # Process dataset
     data = clean_dataset(dataset, advanced=False)
-    start = time.time()
-    Tree(data, algorithm='ID3', criteria='g')
-    end = time.time()
-    print((end - start) / 60)
-    """
+
+    # Cross Validation
     # To see the mean accuracy
     start = time.time()
-    print("Accuracy: ", cross_validation(data[:100], k=5, algorithm='ID3', criteria='e'))
+    print("Accuracy: ", cross_validation(data[:1000], k=5, algorithm='ID3', criteria='e'))
     end = time.time()
-    print((end-start) / 60)
-    """
+    print('Time:', (end-start) / 60)
+
 
 main()
 
